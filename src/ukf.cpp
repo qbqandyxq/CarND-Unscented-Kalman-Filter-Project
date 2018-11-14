@@ -332,7 +332,9 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
     R(0,0)=std_radr_*std_radr_;
     R(1,1)=std_radphi_*std_radphi_;
     R(2,2)=std_radrd_*std_radrd_;
-    
+    for(int i=0;i<2*n_aug+1;i++){
+        z_pred += weights.col(i)*Zsig.col(i);
+    }
     for(int i=0;i<2*n_aug+1;i++){
         VectorXd z_diff = Zsig.col(i)-z_pred;
         while(z_diff(1)>M_PI) z_diff(1)-=2.*M_PI;
