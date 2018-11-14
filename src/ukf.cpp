@@ -83,6 +83,7 @@ UKF::UKF() {
     //create vector for predicted state
     //create covariance matrix for prediction
     
+    
 }
 
 UKF::~UKF() {}
@@ -242,7 +243,44 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
 
   You'll also need to calculate the lidar NIS.
   */
+    //2 measurement dimensions, lidar can px,py
+    //lidar has 2 measurements
+    int n_z=2;
+    MatrixXd Zsig = MatrixXd(n_z, 2*n_aug+1);//2,15
+    VectorXd z_pred= VectorXd(n_z);//2
+    MatrixXd S = MatrixXd(n_z, n_z);//2,2
+    S.fill(0);
+    z_pred.fill(0);
+    Zsig.fill(0);
     
+    MatrixXd R_laser_ = MatrixXd(n_z,n_z);
+    R_laser_.fill(0.0);
+    //create matrix for cross correlation Tc;
+    MatrixXd Tc = MatrixXd(n_x, n_z);
+    for(int i=0;i<2*n_aug+1;i++){
+        double p_x = Xsig_pred(0,i);
+        double p_y = Xsig_pred(1,i);
+        
+        Zsig(0, i)=p_x;
+        Zsig(1, i) = p_y;
+    }
+    R_laser_(0,0)=std_laspx_*std_laspx_;
+    R_laser_(1,1) = std_laspy_*std_laspy_;
+    
+    for(int i=0;i<2*n_aug+1;i++){
+        VectorXd z_diff = Zsig.col(i) - z_pred;
+        S = S+ weights(i)*z_diff*z_diff.transpose();
+        
+        VectorXd x_diff = Xsig_pred.col(i)-x_;
+        Tc = Tc + weights(i)*x_diff*z_diff.transpose();
+    }
+    S += S;
+    //kalman gain K;
+    MatrixXd K=Tc* S.inverse();
+    VectorXd z_diff_ = z - z_pred;
+    
+    x_ += K*z_diff_;
+    P_ = P_ - K*S*K.transpose();
 }
 
 /**
@@ -258,4 +296,65 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 
   You'll also need to calculate the radar NIS.
   */
+    //3 measurement dimensions, radar can measure r, phi, and r_dot
+    //radar has 3 measurements
+    int n_z=3;
+    MatrixXd Zsig = MatrixXd(n_z, 2*n_aug+1);
+    VectorXd z_pred= VectorXd(n_z);
+    MatrixXd S = MatrixXd(n_z, n_z);
+    S.fill(0);
+    z_pred.fill(0);
+    Zsig.fill(0);
+    //UKF update assignment
+    //create matrix for cross correlation Tc;
+    MatrixXd Tc = MatrixXd(n_x, n_z);
+    //init
+    Tc.fill(0.0);
+    
+    //transform sigma points into measurement space
+    for (int i = 0; i<2*n_aug+1; i++) {  //2n+1 simga points
+        
+        // extract values for better readibility
+        double p_x = Xsig_pred(0,i);
+        double p_y = Xsig_pred(1,i);
+        double v  = Xsig_pred(2,i);
+        double yaw = Xsig_pred(3,i);
+        
+        double vx=cos(yaw);
+        double vy=sin(yaw);
+        //rpo
+        Zsig(0,i)=sqrt(px*px+py*py);
+        Zsig(1,i)=atan2(py,px);
+        Zsig(2,i)=(px*vx+py*vy)/sqrt(px*px+py*py);
+    }
+    MatrixXd R = MatrixXd(n_z, n_z);//3,3
+    R.fill(0.0);
+    R(0,0)=std_radr_*std_radr_;
+    R(1,1)=std_radphi_*std_radphi_;
+    R(2,2)=std_radrd_*std_radrd_;
+    
+    for(int i=0;i<2*n_aug+1;i++){
+        VectorXd z_diff = Zsig.col(i)-z_pred;
+        while(z_diff(1)>M_PI) z_diff(1)-=2.*M_PI;
+        while(z_diff(1)<-M_PI) z_diff(1)+=2.*M_PI;
+        
+        S = S+ weights(i)*z_diff*z_diff.transpose();
+        // to calculate the Tc(5,3)
+        VectorXd x_diff = Xsig_pred.col(i) - x_;
+        while(x_diff(3)>M_PI) x_diff(3)-=2.*M_PI;
+        while(x_diff(3)<-M_PI) x_diff(3) +=2.*M_PI;
+        
+        Tc = Tc + weights*x_diff*z_diff.transpose();
+    }
+    S += R;
+    /* after calculate the S, update x & p
+     */
+    //calculate kalman gain K;
+    MatrixXd K=Tc *S.inverse();
+    VectorXd z_diff_=z-z_pred;
+    while(z_diff_(1) > M_PI) z_diff_(1)-=2.*M_PI;
+    while(z_diff_(1) < -M_PI) z_diff_(1)+=2.*M_PI;
+    
+    x=x+K*z_diff_;
+    P_ = P_-K*S*K.transpose();
 }
