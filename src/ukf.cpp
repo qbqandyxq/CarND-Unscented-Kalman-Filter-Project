@@ -13,6 +13,7 @@ using std::vector;
  */
 UKF::UKF() {
     //initialized
+private:
     is_initialized_ = false;
     int n_x=5;
     int n_aug=7;
@@ -81,10 +82,6 @@ UKF::UKF() {
     double previous_timestamp_=0;
     MatrixXd Xsig_aug = MatrixXd(n_aug, 2*n_aug+1);
     MatrixXd Xsig_pred = MatrixXd(n_x, 2*n_aug+1);
-  
-    //create vector for predicted state
-    //create covariance matrix for prediction
-    
     
 }
 
