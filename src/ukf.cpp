@@ -282,7 +282,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
     
     //Calculate NIS
     double NIP = z_diff_.transpose() * S.inverse() * z_diff_;
-    
+    std::cout<<"lidar NIP is: "<<NIP<<std::endl;
 }
 
 /**
@@ -364,4 +364,5 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
     
     //Calculate NIS
     double NIP = z_diff_.transpose() * S.inverse() * z_diff_;
+    std::cout<<"radar NIP is: "<<NIP<<std::endl;
 }
