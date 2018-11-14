@@ -275,10 +275,10 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
     S += S;
     //kalman gain K;
     MatrixXd K=Tc* S.inverse();
-    VectorXd z_diff_ = z - z_pred;
+    VectorXd z_diff_ = meas_package.raw_measurements_ - z_pred;
     
-    x_ += K*z_diff_;
-    P_ = P_ - K*S*K.transpose();
+    x_ += K * z_diff_;
+    P_ = P_ - K * S * K.transpose();
     
     //Calculate NIS
     double NIP = z_diff_.transpose() * S.inverse() * z_diff_;
@@ -355,12 +355,12 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
      */
     //calculate kalman gain K;
     MatrixXd K=Tc *S.inverse();
-    VectorXd z_diff_=z-z_pred;
+    VectorXd z_diff_ = meas_package.raw_measurements_ - z_pred;
     while(z_diff_(1) > M_PI) z_diff_(1)-=2.*M_PI;
     while(z_diff_(1) < -M_PI) z_diff_(1)+=2.*M_PI;
     
-    x=x+K*z_diff_;
-    P_ = P_-K*S*K.transpose();
+    x_ = x_ + K * z_diff_;
+    P_ = P_ - K * S * K.transpose();
     
     //Calculate NIS
     double NIP = z_diff_.transpose() * S.inverse() * z_diff_;

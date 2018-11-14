@@ -73,6 +73,7 @@ public:
     MatrixXd P_aug;
     MatrixXd Xsig_aug;
     MatrixXd Xsig_pred;
+    double NIP;
     
   /**
    * Constructor
