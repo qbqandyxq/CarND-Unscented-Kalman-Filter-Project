@@ -69,7 +69,7 @@ public:
     
     /////
     double previous_timestamp_;
-    MatrixXd x_aug;
+    VectorXd x_aug;
     MatrixXd P_aug;
     MatrixXd Xsig_aug;
     MatrixXd Xsig_pred;
