@@ -17,7 +17,7 @@ UKF::UKF() {
     n_x(5);
     n_aug(7);
     lambda(3- n_aug);
-    {
+    
     
   // if this is false, laser measurements will be ignored (except during init)
   use_laser_ = true;
@@ -71,7 +71,7 @@ UKF::UKF() {
     previous_timestamp_(0);
     MatrixXd Xsig_aug = MatrixXd(n_aug, 2*n_aug+1);
     MatrixXd Xsig_pred = MatrixXd(n_x, 2*n_aug+1);
-    }
+    
     
     
 }
@@ -108,13 +108,15 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
             x_(1)=meas_package.raw_measurements_(1);
             
         }
-        previous_timestamp_ = meas_package.timestamp_;
+        
         
         P_<<1,0,0,0,0,
         0,1,0,0,0,
         0,0,1,0,0,
         0,0,0,1,0,
         0,0,0,0,1;
+        
+        previous_timestamp_ = meas_package.timestamp_;
         
         is_initialized_ =true;
         return;
@@ -124,10 +126,10 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 
     // Prediction
     double df = (meas_package.timestamp_ - previous_timestamp_)/1000000.0;
+    previous_timestamp_ = meas_package.timestamp_;
     
     Prediction(df);
     
-    previous_timestamp_ = meas_package.timestamp_;
     
     if(meas_package.sensor_type_ == MeasurementPackage::RADAR && use_radar_){
         UpdateRadar(meas_package);
@@ -153,14 +155,8 @@ void UKF::Prediction(double delta_t) {
     
     //start first sigma points
     MatrixXd Xsig = MatrixXd(n_x, 2*n_x+1);
-    MatrixXd A = P_.llt().matrixL();
     
-    Xsig.col(0)=x_;
-    for(int i=0;i<n_x;i++){
-        Xsig.col(i+1)=x_ + sqrt(lambda + n_x)*A.col(i);
-        Xsig.col(i+1+n_x)=x_ - sqrt(lambda + n_x)* A.col(i);
-    }
-    //second augmentation
+    
     // x_aug 7
     x_aug.head(5)=x_;
     // P_aug 7,7
@@ -169,6 +165,17 @@ void UKF::Prediction(double delta_t) {
     P_aug(5,5)=std_a_*std_a_;
     //std_yawdd_  in rad/s^2
     P_aug(6,6) = std_yawdd_*std_yawdd_;
+    
+    MatrixXd A = P_aug.llt().matrixL();
+    
+    Xsig.col(0)=x_;
+    for(int i=0;i<n_x;i++){
+        Xsig.col(i+1)=x_ + sqrt(lambda + n_x)*A.col(i);
+        Xsig.col(i+1+n_x)=x_ - sqrt(lambda + n_x)* A.col(i);
+    }
+    //second augmentation
+
+    
     //create square root matrix
     MatrixXd Srm = P_aug.llt().matrixL();
     //7,15
