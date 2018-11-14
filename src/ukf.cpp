@@ -317,8 +317,8 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
     for (int i = 0; i<2*n_aug+1; i++) {  //2n+1 simga points
         
         // extract values for better readibility
-        double p_x = Xsig_pred(0,i);
-        double p_y = Xsig_pred(1,i);
+        double px = Xsig_pred(0,i);
+        double py = Xsig_pred(1,i);
         double v  = Xsig_pred(2,i);
         double yaw = Xsig_pred(3,i);
         
