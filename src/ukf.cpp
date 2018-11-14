@@ -68,7 +68,7 @@ UKF::UKF() {
     for(int i=1;i<n_aug;i++){
         weights(i)=0.5*(lambda+n_aug);
     }
-    previous_timestamp_(0);
+    previous_timestamp_=0;
     MatrixXd Xsig_aug = MatrixXd(n_aug, 2*n_aug+1);
     MatrixXd Xsig_pred = MatrixXd(n_x, 2*n_aug+1);
     
