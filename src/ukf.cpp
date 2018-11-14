@@ -13,7 +13,6 @@ using std::vector;
  */
 UKF::UKF() {
     //initialized
-private:
     is_initialized_ = false;
     int n_x=5;
     int n_aug=7;
