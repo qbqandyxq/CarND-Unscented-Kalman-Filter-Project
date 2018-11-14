@@ -155,8 +155,8 @@ void UKF::Prediction(double delta_t) {
     
     Xsig.col(0)=x_;
     for(int i=0;i<n_x;i++){
-        Xsig.col(i+1)=x+sqrt(lambda + n_x)*A.col(i);
-        Xsig.col(i+1+n_x)=x-sqrt(lambda + n_x)* A.col(i);
+        Xsig.col(i+1)=x_ + sqrt(lambda + n_x)*A.col(i);
+        Xsig.col(i+1+n_x)=x_ - sqrt(lambda + n_x)* A.col(i);
     }
     //second augmentation
     // x_aug 7
