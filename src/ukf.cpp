@@ -13,10 +13,11 @@ using std::vector;
  */
 UKF::UKF() {
     //initialized
-    is_initialized_ = false;
-    int n_x=5;
-    int n_aug=7;
-    int lambda = 3- n_aug;
+    is_initialized_(false);
+    n_x(5);
+    n_aug(7);
+    lambda(3- n_aug);
+    {
     
   // if this is false, laser measurements will be ignored (except during init)
   use_laser_ = true;
@@ -26,13 +27,10 @@ UKF::UKF() {
 
   // initial state vector
   x_ = VectorXd(5);
-    x_.fill(0.0);
   // initial covariance matrix
   P_ = MatrixXd(5, 5);
-
     x_aug=VectorXd(n_aug);
     P_aug = MatrixXd(n_aug, n_aug);
-    
     x_aug.fill(0.0);
     P_aug.fill(0.0);
     
@@ -58,29 +56,23 @@ UKF::UKF() {
   // Radar measurement noise standard deviation radius change in m/s
   std_radrd_ = 0.3;
   //DO NOT MODIFY measurement noise values above these are provided by the sensor manufacturer.
-  
   /**
   TODO:
-
   Complete the initialization. See ukf.h for other member properties.
-
   Hint: one or more values initialized above might be wildly off...
   */
-    P_<<1,0,0,0,0,
-    0,1,0,0,0,
-    0,0,1,0,0,
-    0,0,0,1,0,
-    0,0,0,0,1;
-    
 
+    
     VectorXd weights(2*n_aug+1);
     weights(0)=lambda/(lambda + n_aug);
     for(int i=1;i<n_aug;i++){
         weights(i)=0.5*(lambda+n_aug);
     }
-    double previous_timestamp_=0;
+    previous_timestamp_(0);
     MatrixXd Xsig_aug = MatrixXd(n_aug, 2*n_aug+1);
     MatrixXd Xsig_pred = MatrixXd(n_x, 2*n_aug+1);
+    }
+    
     
 }
 
@@ -105,15 +97,25 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
             
             double vx=ro_dot*cos(phi);
             double vy=ro_dot*sin(phi);
+            x_.fill(0.0);
             x_(0)=ro*cos(phi);
             x_(1)=ro*sin(phi);
             x_(2)=sqrt(pow(vx,2) + pow(vy,2));
         }
         else if(meas_package.sensor_type_ == MeasurementPackage::LASER){
+            x_.fill(0.0);
             x_(0)=meas_package.raw_measurements_(0);
             x_(1)=meas_package.raw_measurements_(1);
-            previous_timestamp_ = meas_package.timestamp_;
+            
         }
+        previous_timestamp_ = meas_package.timestamp_;
+        
+        P_<<1,0,0,0,0,
+        0,1,0,0,0,
+        0,0,1,0,0,
+        0,0,0,1,0,
+        0,0,0,0,1;
+        
         is_initialized_ =true;
         return;
     }
@@ -354,7 +356,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
     /* after calculate the S, update x & p
      */
     //calculate kalman gain K;
-    MatrixXd K=Tc *S.inverse();
+    MatrixXd K = Tc *S.inverse();
     VectorXd z_diff_ = meas_package.raw_measurements_ - z_pred;
     while(z_diff_(1) > M_PI) z_diff_(1)-=2.*M_PI;
     while(z_diff_(1) < -M_PI) z_diff_(1)+=2.*M_PI;
