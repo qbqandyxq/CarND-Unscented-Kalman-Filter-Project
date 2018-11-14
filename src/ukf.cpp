@@ -14,6 +14,10 @@ using std::vector;
 UKF::UKF() {
     //initialized
     is_initialized_ = false;
+    int n_x=5;
+    int n_aug=7;
+    int lambda = 3- n_aug;
+    
   // if this is false, laser measurements will be ignored (except during init)
   use_laser_ = true;
 
@@ -26,7 +30,7 @@ UKF::UKF() {
   // initial covariance matrix
   P_ = MatrixXd(5, 5);
 
-    VectorXd x_aug(n_aug);
+    VectorXd x_aug=VectorXd(n_aug);
     MatrixXd P_aug = MatrixXd(n_aug, n_aug);
     
     x_aug.fill(0.0);
@@ -68,15 +72,13 @@ UKF::UKF() {
     0,0,0,1,0,
     0,0,0,0,1;
     
-    int n_x=5;
-    int n_aug=7;
-    int lambda = 3- n_aug;
+
     VectorXd weights(2*n_aug+1);
     weights(0)=lambda/(lambda + n_aug);
     for(int i=1;i<n_aug;i++){
         weights(i)=0.5*(lambda+n_aug);
     }
-    previous_timestamp_=0;
+    double previous_timestamp_=0;
     MatrixXd Xsig_aug = MatrixXd(n_aug, 2*n_aug+1);
     MatrixXd Xsig_pred = MatrixXd(n_x, 2*n_aug+1);
   
