@@ -56,20 +56,24 @@ public:
   double std_radrd_ ;
 
   ///* Weights of sigma points
-  VectorXd weights_;
+  VectorXd weights;
 
   ///* State dimension
-  int n_x_;
+  int n_x;
 
   ///* Augmented state dimension
-  int n_aug_;
+  int n_aug;
 
   ///* Sigma point spreading parameter
-  double lambda_;
+  double lambda;
     
     /////
     double previous_timestamp_;
-
+    MatrixXd x_aug;
+    MatrixXd P_aug;
+    MatrixXd Xsig_aug;
+    MatrixXd Xsig_pred;
+    
   /**
    * Constructor
    */

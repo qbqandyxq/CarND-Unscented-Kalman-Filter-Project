@@ -30,8 +30,8 @@ UKF::UKF() {
   // initial covariance matrix
   P_ = MatrixXd(5, 5);
 
-    VectorXd x_aug=VectorXd(n_aug);
-    MatrixXd P_aug = MatrixXd(n_aug, n_aug);
+    x_aug=VectorXd(n_aug);
+    P_aug = MatrixXd(n_aug, n_aug);
     
     x_aug.fill(0.0);
     P_aug.fill(0.0);
@@ -114,7 +114,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
             x_(1)=meas_package.raw_measurements_(1);
             previous_timestamp_ = meas_package.timestamp_;
         }
-        is_initialized_ =True;
+        is_initialized_ =true;
         return;
     }
     //start the pipeline
