@@ -71,9 +71,7 @@ UKF::UKF() {
     previous_timestamp_=0;
     MatrixXd Xsig_aug = MatrixXd(n_aug, 2*n_aug+1);
     MatrixXd Xsig_pred = MatrixXd(n_x, 2*n_aug+1);
-    
-    
-    
+    NIP=0.0;
 }
 
 UKF::~UKF() {}
@@ -90,25 +88,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   measurements.
   */
     if(!is_initialized_){
-        if(meas_package.sensor_type_ == MeasurementPackage::RADAR){
-            double ro=meas_package.raw_measurements_(0);
-            double phi = meas_package.raw_measurements_(1);
-            double ro_dot = meas_package.raw_measurements_(2);
-            
-            double vx=ro_dot*cos(phi);
-            double vy=ro_dot*sin(phi);
-            x_.fill(0.0);
-            x_(0)=ro*cos(phi);
-            x_(1)=ro*sin(phi);
-            x_(2)=sqrt(pow(vx,2) + pow(vy,2));
-        }
-        else if(meas_package.sensor_type_ == MeasurementPackage::LASER){
-            x_.fill(0.0);
-            x_(0)=meas_package.raw_measurements_(0);
-            x_(1)=meas_package.raw_measurements_(1);
-            
-        }
-        
+        x_.fill(0.0);
         
         P_<<1,0,0,0,0,
         0,1,0,0,0,
@@ -117,8 +97,29 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
         0,0,0,0,1;
         
         previous_timestamp_ = meas_package.timestamp_;
+        if(meas_package.sensor_type_ == MeasurementPackage::RADAR){
+            double ro=meas_package.raw_measurements_(0);
+            double phi = meas_package.raw_measurements_(1);
+            double ro_dot = meas_package.raw_measurements_(2);
+            
+            double vx=ro_dot*cos(phi);
+            double vy=ro_dot*sin(phi);
+            
+            x_(0)=ro*cos(phi);
+            x_(1)=ro*sin(phi);
+            x_(2)=sqrt(pow(vx,2) + pow(vy,2));
+        }
+        else if(meas_package.sensor_type_ == MeasurementPackage::LASER){
+            
+            x_(0)=meas_package.raw_measurements_(0);
+            x_(1)=meas_package.raw_measurements_(1);
+            
+        }
+        
+        
         
         is_initialized_ =true;
+        cout<<"init over-------"<<endl;
         return;
     }
     //start the pipeline
@@ -130,11 +131,13 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
     
     Prediction(df);
     
-    
+    //update
     if(meas_package.sensor_type_ == MeasurementPackage::RADAR && use_radar_){
+        cout<<"UpdateRadar-------"<<endl;
         UpdateRadar(meas_package);
     }
     else if(meas_package.sensor_type_ == MeasurementPackage::LASER && use_laser_){
+        cout<<"UpdateLidar-------"<<endl;
         UpdateLidar(meas_package);
     }
 }
@@ -155,7 +158,7 @@ void UKF::Prediction(double delta_t) {
     
     //start first sigma points
     MatrixXd Xsig = MatrixXd(n_x, 2*n_x+1);
-    
+    MatrixXd A = P_.llt().matrixL();
     
     // x_aug 7
     x_aug.head(5)=x_;
@@ -166,7 +169,7 @@ void UKF::Prediction(double delta_t) {
     //std_yawdd_  in rad/s^2
     P_aug(6,6) = std_yawdd_*std_yawdd_;
     
-    MatrixXd A = P_aug.llt().matrixL();
+//    MatrixXd A = P_aug.llt().matrixL();
     
     Xsig.col(0)=x_;
     for(int i=0;i<n_x;i++){
@@ -181,13 +184,13 @@ void UKF::Prediction(double delta_t) {
     //7,15
     Xsig_aug.col(0) =x_aug;
     for (int i=0; i<n_aug; i++) {
-        Xsig_aug.col(i+1) = x_aug+sqrt(lambda + n_aug)* Srm.col(i);
+        Xsig_aug.col(i+1) = x_aug + sqrt(lambda + n_aug)* Srm.col(i);
         Xsig_aug.col(i+1+n_aug) = x_aug - sqrt(lambda + n_aug)*Srm.col(i);
     }
     //sigma point prediction
     for(int i=0;i<2*n_aug+1;i++){
-        double px=Xsig_aug(0,i);
-        double py=Xsig_aug(1,i);
+        double p_x=Xsig_aug(0,i);
+        double p_y=Xsig_aug(1,i);
         double v=Xsig_aug(2,i);
         double yaw_angel=Xsig_aug(3,i);
         double yaw_rate=Xsig_aug(4,i);
@@ -196,11 +199,11 @@ void UKF::Prediction(double delta_t) {
         
         double px_p, py_p;
         if(fabs(yaw_rate)>0.001){
-            px_p = px+ v/yaw_rate*(sin(yaw_angel+yaw_rate*delta_t)-sin(yaw_angel));
-            py_p = py+ v/yaw_rate*(-cos(yaw_angel+yaw_rate*delta_t)+cos(yaw_angel));
+            px_p = p_x+ v/yaw_rate*(sin(yaw_angel+yaw_rate*delta_t)-sin(yaw_angel));
+            py_p = p_y+ v/yaw_rate*(-cos(yaw_angel+yaw_rate*delta_t)+cos(yaw_angel));
         }else{
-            px_p=px + v*cos(yaw_angel)*delta_t;
-            py_p=py+v*sin(yaw_angel)*delta_t;
+            px_p=p_x + v*cos(yaw_angel)*delta_t;
+            py_p=p_y+v*sin(yaw_angel)*delta_t;
         }
         double v_p=v;
         double yaw_angel_p = yaw_angel+yaw_angel*delta_t;
@@ -221,6 +224,7 @@ void UKF::Prediction(double delta_t) {
         Xsig_pred(4,i)=yaw_rate_p;
     }
     
+    P_.fill(0);
     
     //Predict Mean and Covariance
     for(int i=0;i<2*n_aug+1;i++){
@@ -229,9 +233,9 @@ void UKF::Prediction(double delta_t) {
     }
     for(int i=0;i<2*n_aug+1;i++){
         //        covariance
-        VectorXd x_diff = Xsig_pred.col(i)-x_;
-        while (x_diff(3)>M_PI) x_diff(3)-=2.*M_PI;
-        while (x_diff(3)<-M_PI) x_diff(3) += 2.*M_PI;
+        VectorXd x_diff = Xsig_pred.col(i) - x_;
+        while (x_diff(3) > M_PI) x_diff(3) -= 2. * M_PI;
+        while (x_diff(3) < -M_PI) x_diff(3) += 2. * M_PI;
         P_ =P_ + weights(i)*x_diff*x_diff.transpose();
     }
     
@@ -281,7 +285,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
         VectorXd x_diff = Xsig_pred.col(i)-x_;
         Tc = Tc + weights(i)*x_diff*z_diff.transpose();
     }
-    S += S;
+    S += R_laser_;
     //kalman gain K;
     MatrixXd K=Tc* S.inverse();
     VectorXd z_diff_ = meas_package.raw_measurements_ - z_pred;
