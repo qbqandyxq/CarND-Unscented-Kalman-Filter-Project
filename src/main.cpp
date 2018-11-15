@@ -49,14 +49,14 @@ int main()
 
       auto s = hasData(std::string(data));
       if (s != "") {
-      	cout<<"1"<<endl;
+      	
         auto j = json::parse(s);
-          cout<<"2"<<endl;
+          
         std::string event = j[0].get<std::string>();
-        cout<<"3"<<endl;
+        
         if (event == "telemetry") {
           // j[1] is the data JSON object
-          cout<<"4"<<endl;
+          
           string sensor_measurment = j[1]["sensor_measurement"];
           
           MeasurementPackage meas_package;
@@ -66,7 +66,7 @@ int main()
     	  // reads first element from the current line
     	  string sensor_type;
     	  iss >> sensor_type;
-
+            cout<<"1"<<endl;
     	  if (sensor_type.compare("L") == 0) {
       	  		meas_package.sensor_type_ = MeasurementPackage::LASER;
           		meas_package.raw_measurements_ = VectorXd(2);
@@ -77,7 +77,9 @@ int main()
           		meas_package.raw_measurements_ << px, py;
           		iss >> timestamp;
           		meas_package.timestamp_ = timestamp;
+              cout<<"2"<<endl;
           } else if (sensor_type.compare("R") == 0) {
+              
 
       	  		meas_package.sensor_type_ = MeasurementPackage::RADAR;
           		meas_package.raw_measurements_ = VectorXd(3);
@@ -90,6 +92,7 @@ int main()
           		meas_package.raw_measurements_ << ro,theta, ro_dot;
           		iss >> timestamp;
           		meas_package.timestamp_ = timestamp;
+              cout<<"3"<<endl;
           }
           float x_gt;
     	  float y_gt;
@@ -109,6 +112,7 @@ int main()
           //Call ProcessMeasurment(meas_package) for Kalman filter
     	  ukf.ProcessMeasurement(meas_package);    	  
 
+            cout<<"4"<<endl;
     	  //Push the current estimated x,y positon from the Kalman filter's state vector
 
     	  VectorXd estimate(4);
@@ -127,7 +131,7 @@ int main()
     	  estimate(3) = v2;
     	  
     	  estimations.push_back(estimate);
-
+            cout<<"5"<<endl;
     	  VectorXd RMSE = tools.CalculateRMSE(estimations, ground_truth);
 
           json msgJson;
