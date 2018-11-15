@@ -56,11 +56,13 @@ int main()
         
         if (event == "telemetry") {
           // j[1] is the data JSON object
-          
+          cout<<"j"<<endl;
           string sensor_measurment = j[1]["sensor_measurement"];
-          
+          cout<<"0"<<endl;
           MeasurementPackage meas_package;
+            cout<<"meas"<<endl;
           istringstream iss(sensor_measurment);
+            cout<<"iss"<<endl;
     	  long long timestamp;
 
     	  // reads first element from the current line
