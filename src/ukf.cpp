@@ -268,6 +268,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
     R_laser_.fill(0.0);
     //create matrix for cross correlation Tc;
     MatrixXd Tc = MatrixXd(n_x, n_z);
+    Tc.fill(0.0);
     for(int i=0;i<2*n_aug+1;i++){
         double p_x = Xsig_pred(0,i);
         double p_y = Xsig_pred(1,i);
@@ -275,8 +276,10 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
         Zsig(0, i)=p_x;
         Zsig(1, i) = p_y;
     }
-    R_laser_(0,0)=std_laspx_*std_laspx_;
-    R_laser_(1,1) = std_laspy_*std_laspy_;
+//    R_laser_(0,0)=std_laspx_*std_laspx_;
+//    R_laser_(1,1) = std_laspy_*std_laspy_;
+    R_laser_<<std_laspx_*std_laspx_, 0,
+    0, std_laspy_*std_laspy_;
     
     for(int i=0;i<2*n_aug+1;i++){
         VectorXd z_diff = Zsig.col(i) - z_pred;
@@ -285,12 +288,12 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
         VectorXd x_diff = Xsig_pred.col(i)-x_;
         Tc = Tc + weights(i)*x_diff*z_diff.transpose();
     }
-    S += R_laser_;
+    S = S + R_laser_;
     //kalman gain K;
     MatrixXd K=Tc* S.inverse();
     VectorXd z_diff_ = meas_package.raw_measurements_ - z_pred;
     
-    x_ += K * z_diff_;
+    x_ =x_ + K * z_diff_;
     P_ = P_ - K * S * K.transpose();
     
     //Calculate NIS
@@ -343,17 +346,21 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
         Zsig(2,i)=(px*vx+py*vy)/sqrt(px*px+py*py);
     }
     MatrixXd R = MatrixXd(n_z, n_z);//3,3
-    R.fill(0.0);
-    R(0,0)=std_radr_*std_radr_;
-    R(1,1)=std_radphi_*std_radphi_;
-    R(2,2)=std_radrd_*std_radrd_;
+//    R.fill(0.0);
+//    R(0,0)=std_radr_*std_radr_;
+//    R(1,1)=std_radphi_*std_radphi_;
+//    R(2,2)=std_radrd_*std_radrd_;
+    R << std_radr_*std_radr_, 0, 0,
+        0, std_radphi_*std_radphi_, 0,
+        0, 0, std_radrd_*std_radrd_;
+    
     for(int i=0;i<2*n_aug+1;i++){
-        z_pred += weights.col(i)*Zsig.col(i);
+        z_pred = z_pred + weights.col(i)*Zsig.col(i);
     }
     for(int i=0;i<2*n_aug+1;i++){
         VectorXd z_diff = Zsig.col(i)-z_pred;
-        while(z_diff(1)>M_PI) z_diff(1)-=2.*M_PI;
-        while(z_diff(1)<-M_PI) z_diff(1)+=2.*M_PI;
+        while(z_diff(1) > M_PI) z_diff(1)-=2.*M_PI;
+        while(z_diff(1) < -M_PI) z_diff(1)+=2.*M_PI;
         
         S = S+ weights(i)*z_diff*z_diff.transpose();
         // to calculate the Tc(5,3)
@@ -363,7 +370,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
         
         Tc = Tc + weights*x_diff*z_diff.transpose();
     }
-    S += R;
+    S =S + R;
     /* after calculate the S, update x & p
      */
     //calculate kalman gain K;
