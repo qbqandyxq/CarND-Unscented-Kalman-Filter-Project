@@ -45,18 +45,18 @@ int main()
 
     if (length && length > 2 && data[0] == '4' && data[1] == '2')
     {
-        cout<<"start"<<endl;
+        
 
       auto s = hasData(std::string(data));
       if (s != "") {
-      	
+      	cout<<"1"<<endl;
         auto j = json::parse(s);
-
+          cout<<"2"<<endl;
         std::string event = j[0].get<std::string>();
-        
+        cout<<"3"<<endl;
         if (event == "telemetry") {
           // j[1] is the data JSON object
-          
+          cout<<"4"<<endl;
           string sensor_measurment = j[1]["sensor_measurement"];
           
           MeasurementPackage meas_package;
@@ -145,7 +145,6 @@ int main()
       } else {
         
         std::string msg = "42[\"manual\",{}]";
-          cout<<"fuck"<<endl;
         ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
       }
     }
