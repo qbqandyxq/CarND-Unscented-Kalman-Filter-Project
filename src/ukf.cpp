@@ -88,7 +88,8 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   measurements.
   */
     if(!is_initialized_){
-        x_.fill(0.0);
+        cout<<"init start-------"<<endl;
+        x_<<1, 1, 1, 1, 0.1;
         
         P_<<1,0,0,0,0,
         0,1,0,0,0,
@@ -133,11 +134,11 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
     
     //update
     if(meas_package.sensor_type_ == MeasurementPackage::RADAR && use_radar_){
-        cout<<"UpdateRadar-------"<<endl;
+//        cout<<"UpdateRadar-------"<<endl;
         UpdateRadar(meas_package);
     }
     else if(meas_package.sensor_type_ == MeasurementPackage::LASER && use_laser_){
-        cout<<"UpdateLidar-------"<<endl;
+//        cout<<"UpdateLidar-------"<<endl;
         UpdateLidar(meas_package);
     }
 }
@@ -260,9 +261,9 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
     MatrixXd Zsig = MatrixXd(n_z, 2*n_aug+1);//2,15
     VectorXd z_pred= VectorXd(n_z);//2
     MatrixXd S = MatrixXd(n_z, n_z);//2,2
-    S.fill(0);
-    z_pred.fill(0);
-    Zsig.fill(0);
+    S.fill(0.0);
+    z_pred.fill(0.0);
+    Zsig.fill(0.0);
     
     MatrixXd R_laser_ = MatrixXd(n_z,n_z);
     R_laser_.fill(0.0);
@@ -320,9 +321,9 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
     MatrixXd Zsig = MatrixXd(n_z, 2*n_aug+1);
     VectorXd z_pred= VectorXd(n_z);
     MatrixXd S = MatrixXd(n_z, n_z);
-    S.fill(0);
-    z_pred.fill(0);
-    Zsig.fill(0);
+    S.fill(0.0);
+    z_pred.fill(0.0);
+    Zsig.fill(0.0);
     //UKF update assignment
     //create matrix for cross correlation Tc;
     MatrixXd Tc = MatrixXd(n_x, n_z);
