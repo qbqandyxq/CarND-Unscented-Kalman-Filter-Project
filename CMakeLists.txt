@@ -20,7 +20,6 @@ link_directories(/usr/local/Cellar/libuv/1*/lib)
 
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin") 
 
-
 add_executable(UnscentedKF ${sources})
 
 target_link_libraries(UnscentedKF z ssl uv uWS)
