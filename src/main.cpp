@@ -145,6 +145,7 @@ int main()
       } else {
         
         std::string msg = "42[\"manual\",{}]";
+          cout<<"fuck"<<endl;
         ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
       }
     }
