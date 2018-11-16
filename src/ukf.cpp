@@ -29,10 +29,9 @@ UKF::UKF() {
   x_ = VectorXd(5);
   // initial covariance matrix
   P_ = MatrixXd(5, 5);
-    x_aug=VectorXd(n_aug);
-    P_aug = MatrixXd(n_aug, n_aug);
-    x_aug.fill(0.0);
-    P_aug.fill(0.0);
+
+    
+    
     
   // Process noise standard deviation longitudinal acceleration in m/s^2
   std_a_ = 30;
@@ -160,11 +159,15 @@ void UKF::Prediction(double delta_t) {
     MatrixXd A = P_.llt().matrixL();
     MatrixXd Xsig_aug = MatrixXd(n_aug, 2*n_aug+1);
     MatrixXd Xsig_pred = MatrixXd(n_x, 2*n_aug+1);
+    MatrixXd x_aug=VectorXd(n_aug);
+    MatrixXd P_aug = MatrixXd(n_aug, n_aug);
     
     // x_aug 7
     x_aug.head(5)=x_;
-    
+    x_aug(5)=0;
+    x_aug(6)=0;
     // P_aug 7,7
+    P_aug.fill(0.0)
     P_aug.topLeftCorner(n_x, n_x)=P_;
     //std_a_ m/s^2
     P_aug(5,5)=std_a_*std_a_;
