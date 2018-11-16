@@ -54,10 +54,9 @@ int main()
           
         std::string event = j[0].get<std::string>();
         
-        if (event == "telemetry" && j[1]["sensor_measurement"] != null) {
+        if (event == "telemetry" ) {
           // j[1] is the data JSON object
-          cout<<"j"<<endl;
-            
+            std::cout<<"fucking this  "<<j[1]["sensor_measurement"]<<std::endl;
           string sensor_measurment = j[1]["sensor_measurement"];
             //error return null
           MeasurementPackage meas_package;
