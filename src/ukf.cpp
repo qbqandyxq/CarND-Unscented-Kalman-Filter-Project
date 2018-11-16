@@ -160,7 +160,7 @@ void UKF::Prediction(double delta_t) {
     MatrixXd Xsig_aug = MatrixXd(n_aug, 2*n_aug+1);
     MatrixXd Xsig_pred = MatrixXd(n_x, 2*n_aug+1);
     
-    MatrixXd x_aug=VectorXd(n_aug);
+    VectorXd x_aug=VectorXd(n_aug);
     MatrixXd P_aug = MatrixXd(n_aug, n_aug);
     
     // x_aug 7
