@@ -56,7 +56,7 @@ int main()
         
         if (event == "telemetry" ) {
           // j[1] is the data JSON object
-            std::cout<<"fucking this  "<<j[1]["sensor_measurement"]<<std::endl;
+            
           string sensor_measurment = j[1]["sensor_measurement"];
             //error return null
           MeasurementPackage meas_package;
