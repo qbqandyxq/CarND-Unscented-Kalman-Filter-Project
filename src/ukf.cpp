@@ -87,7 +87,6 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   measurements.
   */
     if(!is_initialized_){
-        cout<<"init start-------"<<endl;
         x_<<1, 1, 1, 1, 0.1;
         
         P_<<1,0,0,0,0,
@@ -119,7 +118,6 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
         
         
         is_initialized_ =true;
-        cout<<"init over-------"<<endl;
         return;
     }
     //start the pipeline
@@ -157,6 +155,7 @@ void UKF::Prediction(double delta_t) {
     //first generate sigma points
     
     //start first sigma points
+
     MatrixXd Xsig = MatrixXd(n_x, 2*n_x+1);
     MatrixXd A = P_.llt().matrixL();
     MatrixXd Xsig_aug = MatrixXd(n_aug, 2*n_aug+1);
@@ -173,7 +172,7 @@ void UKF::Prediction(double delta_t) {
     P_aug(6,6) = std_yawdd_*std_yawdd_;
     
 //    MatrixXd A = P_aug.llt().matrixL();
-    
+   
     Xsig.col(0)=x_;
     for(int i=0;i<n_x;i++){
         Xsig.col(i+1)=x_ + sqrt(lambda + n_x)*A.col(i);
@@ -181,15 +180,19 @@ void UKF::Prediction(double delta_t) {
     }
     //second augmentation
 
-    
+    cout<<"4"<<endl;
     //create square root matrix
     MatrixXd Srm = P_aug.llt().matrixL();
     //7,15
+	cout<<"41"<<endl;
     Xsig_aug.col(0) =x_aug;
+	cout<<"42"<<endl;
     for (int i=0; i<n_aug; i++) {
         Xsig_aug.col(i+1) = x_aug + sqrt(lambda + n_aug)* Srm.col(i);
         Xsig_aug.col(i+1+n_aug) = x_aug - sqrt(lambda + n_aug)*Srm.col(i);
     }
+
+	cout<<"5"<<endl;
     //sigma point prediction
     for(int i=0;i<2*n_aug+1;i++){
         double p_x=Xsig_aug(0,i);
@@ -218,7 +221,7 @@ void UKF::Prediction(double delta_t) {
         v_p = v_p + nu_a*delta_t;
         yaw_angel_p = yaw_angel_p + 0.5*delta_t*delta_t*nu_yawdd;
         yaw_rate_p = yaw_rate_p+ delta_t*nu_yawdd;
-        
+        cout<<"4"<<endl;
         //insert to sigma ,5,15
         Xsig_pred(0,i)=px_p;
         Xsig_pred(1,i)=py_p;
@@ -226,7 +229,7 @@ void UKF::Prediction(double delta_t) {
         Xsig_pred(3,i)=yaw_angel_p;
         Xsig_pred(4,i)=yaw_rate_p;
     }
-    
+    cout<<"6"<<endl;
     P_.fill(0);
     
     //Predict Mean and Covariance
@@ -240,7 +243,7 @@ void UKF::Prediction(double delta_t) {
         while (x_diff(3) > M_PI) x_diff(3) -= 2. * M_PI;
         while (x_diff(3) < -M_PI) x_diff(3) += 2. * M_PI;
         P_ =P_ + weights(i)*x_diff*x_diff.transpose();
-    }
+	}
     
 }
 
