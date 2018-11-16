@@ -69,8 +69,7 @@ UKF::UKF() {
         weights(i)=0.5*(lambda+n_aug);
     }
     previous_timestamp_=0;
-    MatrixXd Xsig_aug = MatrixXd(n_aug, 2*n_aug+1);
-    MatrixXd Xsig_pred = MatrixXd(n_x, 2*n_aug+1);
+    
     NIP=0.0;
 }
 
@@ -160,9 +159,12 @@ void UKF::Prediction(double delta_t) {
     //start first sigma points
     MatrixXd Xsig = MatrixXd(n_x, 2*n_x+1);
     MatrixXd A = P_.llt().matrixL();
+    MatrixXd Xsig_aug = MatrixXd(n_aug, 2*n_aug+1);
+    MatrixXd Xsig_pred = MatrixXd(n_x, 2*n_aug+1);
     
     // x_aug 7
     x_aug.head(5)=x_;
+    
     // P_aug 7,7
     P_aug.topLeftCorner(n_x, n_x)=P_;
     //std_a_ m/s^2
