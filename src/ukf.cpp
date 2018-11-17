@@ -31,10 +31,10 @@ UKF::UKF() {
   P_ = MatrixXd(5, 5);
         
   // Process noise standard deviation longitudinal acceleration in m/s^2
-  std_a_ = 30;
+  std_a_ = 0.3;
 
   // Process noise standard deviation yaw acceleration in rad/s^2
-  std_yawdd_ = 30;
+  std_yawdd_ = 0.3;
   
   //DO NOT MODIFY measurement noise values below these are provided by the sensor manufacturer.
   // Laser measurement noise standard deviation position1 in m
@@ -123,11 +123,11 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
     
     //update
     if(meas_package.sensor_type_ == MeasurementPackage::RADAR && use_radar_){
-        cout<<"UpdateRadar-------"<<endl;
+//        cout<<"UpdateRadar-------"<<endl;
         UpdateRadar(meas_package);
     }
     else if(meas_package.sensor_type_ == MeasurementPackage::LASER && use_laser_){
-        cout<<"UpdateLidar-------"<<endl;
+  //      cout<<"UpdateLidar-------"<<endl;
         UpdateLidar(meas_package);
     }
 }
@@ -365,9 +365,8 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
         0, 0, std_radrd_*std_radrd_;
     
     for(int i=0;i<2*n_aug+1;i++){
-        z_pred = z_pred + weights.col(i)*Zsig.col(i);
+        z_pred = z_pred + weights(i)*Zsig.col(i);
     }
-	cout<<"z_pred"<<endl;
     for(int i=0;i<2*n_aug+1;i++){
         VectorXd z_diff = Zsig.col(i)-z_pred;
         while(z_diff(1) > M_PI) z_diff(1)-=2.*M_PI;
@@ -379,14 +378,14 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
         while(x_diff(3)>M_PI) x_diff(3)-=2.*M_PI;
         while(x_diff(3)<-M_PI) x_diff(3) +=2.*M_PI;
         
-        Tc = Tc + weights*x_diff*z_diff.transpose();
+        Tc = Tc + weights(i)*x_diff*z_diff.transpose();
     }
-	cout<<"s+r"<<endl;
+
     S =S + R;
     /* after calculate the S, update x & p
      */
     //calculate kalman gain K;
-	cout<<"1"<<endl;
+	
     MatrixXd K = Tc *S.inverse();
     VectorXd z_diff_ = meas_package.raw_measurements_ - z_pred;
     while(z_diff_(1) > M_PI) z_diff_(1)-=2.*M_PI;
