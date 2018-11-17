@@ -310,7 +310,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
     P_ = P_ - K * S * K.transpose();
     
     //Calculate NIS
-    double NIP = z_diff_.transpose() * S.inverse() * z_diff_;
+    NIP = z_diff_.transpose() * S.inverse() * z_diff_;
 //    std::cout<<"lidar NIP is: "<<NIP<<std::endl;
 }
 
@@ -351,8 +351,8 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
         double v  = Xsig_pred(2,i);
         double yaw = Xsig_pred(3,i);
         
-        double vx=cos(yaw);
-        double vy=sin(yaw);
+        double vx=cos(yaw)*v;
+        double vy=sin(yaw)*v;
         //rpo
         Zsig(0,i)=sqrt(px*px+py*py);
         Zsig(1,i)=atan2(py,px);
@@ -395,6 +395,6 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
     P_ = P_ - K * S * K.transpose();
     
     //Calculate NIS
-    double NIP = z_diff_.transpose() * S.inverse() * z_diff_;
+    NIP = z_diff_.transpose() * S.inverse() * z_diff_;
 //    std::cout<<"radar NIP is: "<<NIP<<std::endl;
 }
