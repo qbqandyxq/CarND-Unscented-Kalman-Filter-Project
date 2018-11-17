@@ -34,7 +34,7 @@ UKF::UKF() {
   std_a_ = 1.;
 
   // Process noise standard deviation yaw acceleration in rad/s^2
-  std_yawdd_ = 1.;
+  std_yawdd_ = .5;
   
   //DO NOT MODIFY measurement noise values below these are provided by the sensor manufacturer.
   // Laser measurement noise standard deviation position1 in m
@@ -86,8 +86,6 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
         0,0,1,0,0,
         0,0,0,1,0,
         0,0,0,0,1;
-        
-        previous_timestamp_ = meas_package.timestamp_;
         if(meas_package.sensor_type_ == MeasurementPackage::RADAR){
             double ro=meas_package.raw_measurements_(0);
             double phi = meas_package.raw_measurements_(1);
@@ -99,20 +97,19 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
             x_(0)=ro*cos(phi);
             x_(1)=ro*sin(phi);
             x_(2)=sqrt(pow(vx,2) + pow(vy,2));
-	    x_(3)=0;
-	    x_(4)=0;
+            x_(3)=0;
+            x_(4)=0;
         }
         else if(meas_package.sensor_type_ == MeasurementPackage::LASER){
             
             x_(0)=meas_package.raw_measurements_(0);
             x_(1)=meas_package.raw_measurements_(1);
-            x_(2)=0;
-	    x_(3)=0;
-	    x_(4)=0;
+            x_(2)=4;
+            x_(3)=0.5;
+            x_(4)=0;
         }
         
-        
-        
+        previous_timestamp_ = meas_package.timestamp_;
         is_initialized_ =true;
         return;
     }
@@ -154,8 +151,6 @@ void UKF::Prediction(double delta_t) {
 
     MatrixXd Xsig = MatrixXd(n_x, 2*n_x+1);
     MatrixXd A = P_.llt().matrixL();
-    MatrixXd Xsig_aug = MatrixXd(n_aug, 2*n_aug+1);
-    
     
     VectorXd x_aug=VectorXd(n_aug);
     MatrixXd P_aug = MatrixXd(n_aug, n_aug);
@@ -185,9 +180,9 @@ void UKF::Prediction(double delta_t) {
     //create square root matrix
     MatrixXd Srm = P_aug.llt().matrixL();
     //7,15
-
+    MatrixXd Xsig_aug = MatrixXd(n_aug, 2*n_aug+1);
     Xsig_aug.col(0) =x_aug;
-  
+    lambda=3-n_aug;
     for (int i=0; i<n_aug; i++) {
         Xsig_aug.col(i+1) = x_aug + sqrt(lambda + n_aug)* Srm.col(i);
         Xsig_aug.col(i+1+n_aug) = x_aug - sqrt(lambda + n_aug)*Srm.col(i);
