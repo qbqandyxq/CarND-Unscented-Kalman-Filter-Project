@@ -14,9 +14,9 @@ using std::vector;
 UKF::UKF() {
     //initialized
     is_initialized_ = false;
-    n_x=5;
-    n_aug=7;
-    lambda=3- n_aug;
+    n_x = 5;
+    n_aug = 7;
+    lambda = 3 - n_aug;
     
     
   // if this is false, laser measurements will be ignored (except during init)
