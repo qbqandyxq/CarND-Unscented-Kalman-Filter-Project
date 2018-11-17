@@ -31,10 +31,10 @@ UKF::UKF() {
   P_ = MatrixXd(5, 5);
         
   // Process noise standard deviation longitudinal acceleration in m/s^2
-  std_a_ = 0.3;
+  std_a_ = 2;
 
   // Process noise standard deviation yaw acceleration in rad/s^2
-  std_yawdd_ = 0.3;
+  std_yawdd_ = 0.5;
   
   //DO NOT MODIFY measurement noise values below these are provided by the sensor manufacturer.
   // Laser measurement noise standard deviation position1 in m
@@ -79,7 +79,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   measurements.
   */
     if(!is_initialized_){
-        x_<<1, 1, 1, 1, 0.1;
+        x_<<1, 1, 1, 1, 1;
         
         P_<<1,0,0,0,0,
         0,1,0,0,0,
@@ -169,7 +169,7 @@ void UKF::Prediction(double delta_t) {
     P_aug(6,6) = std_yawdd_*std_yawdd_;
     
 //    MatrixXd A = P_aug.llt().matrixL();
-   
+    lambda=3-n_x;
     Xsig.col(0)=x_;
     for(int i=0;i<n_x;i++){
         Xsig.col(i+1)=x_ + sqrt(lambda + n_x)*A.col(i);
@@ -183,7 +183,7 @@ void UKF::Prediction(double delta_t) {
     //7,15
 
     Xsig_aug.col(0) =x_aug;
-	
+    lambda=3-n_aug;
     for (int i=0; i<n_aug; i++) {
         Xsig_aug.col(i+1) = x_aug + sqrt(lambda + n_aug)* Srm.col(i);
         Xsig_aug.col(i+1+n_aug) = x_aug - sqrt(lambda + n_aug)*Srm.col(i);
