@@ -53,23 +53,31 @@ public:
   double std_radphi_;
 
   ///* Radar measurement noise standard deviation radius change in m/s
+    //
   double std_radrd_ ;
 
   ///* Weights of sigma points
-  VectorXd weights;
+    //
+  VectorXd weights_;
 
   ///* State dimension
-  int n_x;
+    //
+  int n_x_;
 
   ///* Augmented state dimension
-  int n_aug;
+    //
+  int n_aug_;
 
   ///* Sigma point spreading parameter
-  double lambda;
+    //
+  double lambda_;
     
     /////
     double previous_timestamp_;
-    double NIP;
+    double NIS;
+    //
+    double NIS_laser_;
+    double NIS_radar_;
     
   /**
    * Constructor
