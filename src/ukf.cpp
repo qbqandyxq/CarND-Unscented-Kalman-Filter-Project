@@ -26,7 +26,7 @@ UKF::UKF() {
   // initial covariance matrix
   P_ = MatrixXd(5, 5);
   // Process noise standard deviation longitudinal acceleration in m/s^2
-  std_a_ = 2.;
+  std_a_ = 1;
   // Process noise standard deviation yaw acceleration in rad/s^2
   std_yawdd_ = .3;
   //DO NOT MODIFY measurement noise values below these are provided by the sensor manufacturer.
@@ -67,7 +67,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   measurements.
   */
     if(!is_initialized_){
-        x_<<1, 1, 1, 1, 0.1;
+        x_<<1, 1, 1, 1, 1;
 
 //        P_<<0.15,0,0,0,0,
 //        0,0.15,0,0,0,
@@ -84,9 +84,9 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 
             x_(0)=ro*cos(phi);
             x_(1)=ro*sin(phi);
-            x_(2)=0;//sqrt(pow(vx,2) + pow(vy,2));//4
-            x_(3)=0;//ro_dot*cos(phi);//0;
-            x_(4)=0;//ro_dot*sin(phi);
+            x_(2)=sqrt(pow(vx,2) + pow(vy,2));//4
+            x_(3)=0;
+            x_(4)=0;
             
 //            std_radr_ = 0.3;
 //            // Radar measurement noise standard deviation angle in rad
@@ -97,8 +97,8 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
             P_ << std_radr_*std_radr_, 0, 0, 0, 0,
             0, std_radr_*std_radr_, 0, 0, 0,
             0, 0, 1, 0, 0,
-            0, 0, 0, std_radphi_*std_radphi_, 0,
-            0, 0, 0, 0, std_radrd_*std_radrd_;
+            0, 0, 0, 1, 0,
+            0, 0, 0, 0, 1;
             
         }
         else if(meas_package.sensor_type_ == MeasurementPackage::LASER){
