@@ -84,9 +84,9 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 
             x_(0)=ro*cos(phi);
             x_(1)=ro*sin(phi);
-            x_(2)=4;//sqrt(pow(vx,2) + pow(vy,2));
-            x_(3)=ro_dot*cos(phi);//0;
-            x_(4)=ro_dot*sin(phi);
+            x_(2)=sqrt(pow(vx,2) + pow(vy,2));//4
+            x_(3)=0;//ro_dot*cos(phi);//0;
+            x_(4)=0;//ro_dot*sin(phi);
             
 //            P_ << std_radr_*std_radr_, 0, 0, 0, 0,
 //            0, std_radr_*std_radr_, 0, 0, 0,
@@ -99,8 +99,8 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 
             x_(0)=meas_package.raw_measurements_(0);
             x_(1)=meas_package.raw_measurements_(1);
-            x_(2)=4;
-            x_(3)=0.5;
+            x_(2)=0;//4;
+            x_(3)=0;//0.5;
             x_(4)=0;
             
 //            P_ << std_laspx_*std_laspx_, 0, 0, 0, 0,
