@@ -57,7 +57,7 @@ UKF::UKF() {
   Complete the initialization. See ukf.h for other member properties.
   Hint: one or more values initialized above might be wildly off...
   */
-    weights_=VectorXd(2*n_aug+1);
+    weights_=VectorXd(2*n_aug_+1);
 
     previous_timestamp_=0;
 
@@ -98,7 +98,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
             x_(0)=ro*cos(phi);
             x_(1)=ro*sin(phi);
             x_(2)=4;//sqrt(pow(vx,2) + pow(vy,2));
-            x_(3)=ro_dot*cos(phi)//0;
+            x_(3)=ro_dot*cos(phi);//0;
             x_(4)=ro_dot*sin(phi);
         }
         else if(meas_package.sensor_type_ == MeasurementPackage::LASER){
@@ -267,7 +267,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
     //2 measurement dimensions, lidar can px,py
     //lidar has 2 measurements
     int n_z=2;
-    MatrixXd Zsig = MatrixXd(n_z_, 2*n_aug_+1);//2,15
+    MatrixXd Zsig = MatrixXd(n_z, 2*n_aug_+1);//2,15
     VectorXd z_pred= VectorXd(n_z);//2
     MatrixXd S = MatrixXd(n_z, n_z);//2,2
     S.fill(0.0);
@@ -299,7 +299,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
 
         VectorXd x_diff = Xsig_pred_.col(i)-x_;
         while(x_diff(3) > M_PI) x_diff(3) -= 2.*M_PI;
-        while(x_diff(3)< -M_PI) x_diff(3) += 2.M_PI;
+        while(x_diff(3)< -M_PI) x_diff(3) += 2.*M_PI;
         Tc = Tc + weights_(i)*x_diff*z_diff.transpose();
     }
     S = S + R_laser_;
