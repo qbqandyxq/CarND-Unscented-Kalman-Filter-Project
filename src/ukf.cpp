@@ -17,38 +17,27 @@ UKF::UKF() {
     n_x_ = 5;
     n_aug_ = 7;
     lambda_ = 3 - n_x_;
-
-
   // if this is false, laser measurements will be ignored (except during init)
   use_laser_ = true;
-
   // if this is false, radar measurements will be ignored (except during init)
   use_radar_ = true;
-
   // initial state vector
   x_ = VectorXd(5);
   // initial covariance matrix
   P_ = MatrixXd(5, 5);
-
   // Process noise standard deviation longitudinal acceleration in m/s^2
   std_a_ = 1.;
-
   // Process noise standard deviation yaw acceleration in rad/s^2
   std_yawdd_ = .5;
-
   //DO NOT MODIFY measurement noise values below these are provided by the sensor manufacturer.
   // Laser measurement noise standard deviation position1 in m
   std_laspx_ = 0.15;
-
   // Laser measurement noise standard deviation position2 in m
   std_laspy_ = 0.15;
-
   // Radar measurement noise standard deviation radius in m
   std_radr_ = 0.3;
-
   // Radar measurement noise standard deviation angle in rad
   std_radphi_ = 0.03;
-
   // Radar measurement noise standard deviation radius change in m/s
   std_radrd_ = 0.3;
   //DO NOT MODIFY measurement noise values above these are provided by the sensor manufacturer.
@@ -58,9 +47,7 @@ UKF::UKF() {
   Hint: one or more values initialized above might be wildly off...
   */
     weights_=VectorXd(2*n_aug_+1);
-
     previous_timestamp_=0;
-
     NIS_laser_=0.0;
     NIS_radar_=0.0;
     Xsig_pred_ = MatrixXd(n_x_, 2*n_aug_ + 1);
@@ -82,11 +69,11 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
     if(!is_initialized_){
         x_<<1, 1, 1, 1, 1;
 
-        P_<<1,0,0,0,0,
-        0,1,0,0,0,
-        0,0,1,0,0,
-        0,0,0,1,0,
-        0,0,0,0,1;
+//        P_<<1,0,0,0,0,
+//        0,1,0,0,0,
+//        0,0,1,0,0,
+//        0,0,0,1,0,
+//        0,0,0,0,1;
         if(meas_package.sensor_type_ == MeasurementPackage::RADAR){
             double ro=meas_package.raw_measurements_(0);
             double phi = meas_package.raw_measurements_(1);
@@ -100,6 +87,13 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
             x_(2)=4;//sqrt(pow(vx,2) + pow(vy,2));
             x_(3)=ro_dot*cos(phi);//0;
             x_(4)=ro_dot*sin(phi);
+            
+            P_ << std_radr_*std_radr_, 0, 0, 0, 0,
+            0, std_radr_*std_radr_, 0, 0, 0,
+            0, 0, 1, 0, 0,
+            0, 0, 0, std_radphi_, 0,
+            0, 0, 0, 0, std_radphi_;
+            
         }
         else if(meas_package.sensor_type_ == MeasurementPackage::LASER){
 
@@ -108,6 +102,12 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
             x_(2)=4;
             x_(3)=0.5;
             x_(4)=0;
+            
+            P_ << std_laspx_*std_laspx_, 0, 0, 0, 0,
+            0, std_laspy_*std_laspy_, 0, 0, 0,
+            0, 0, 1, 0, 0,
+            0, 0, 0, 1, 0,
+            0, 0, 0, 0, 1;
         }
 
         previous_timestamp_ = meas_package.timestamp_;
@@ -299,34 +299,20 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
         while(z_diff(1) < -M_PI) z_diff(1)+=2.*M_PI;
         
         S = S+ weights_(i)*z_diff*z_diff.transpose();
-//        VectorXd x_diff = Xsig_pred_.col(i)-x_;
-//        while(x_diff(3) > M_PI) x_diff(3) -= 2.*M_PI;
-//        while(x_diff(3)< -M_PI) x_diff(3) += 2.*M_PI;
-//        Tc = Tc + weights_(i)*x_diff*z_diff.transpose();
-    }
-    S = S + R_laser_;
-    
-    for (int i=0; i<2*n_aug_+1; i++) {
-        VectorXd z_diff = Zsig.col(i) - z_pred;
-        while(z_diff(1) > M_PI) z_diff(1)-=2.*M_PI;
-        while(z_diff(1) < -M_PI) z_diff(1)+=2.*M_PI;
-        
         VectorXd x_diff = Xsig_pred_.col(i)-x_;
         while(x_diff(3) > M_PI) x_diff(3) -= 2.*M_PI;
         while(x_diff(3)< -M_PI) x_diff(3) += 2.*M_PI;
         Tc = Tc + weights_(i)*x_diff*z_diff.transpose();
     }
+    S = S + R_laser_;
     //kalman gain K;
     MatrixXd K=Tc* S.inverse();
     VectorXd z_diff_ = meas_package.raw_measurements_ - z_pred;
 
     x_ =x_ + K * z_diff_;
     P_ = P_ - K * S * K.transpose();
-
     //Calculate NIS
     NIS_laser_ = z_diff_.transpose() * S.inverse() * z_diff_;
-    
-//    std::cout<<"lidar NIP is: "<<NIP<<std::endl;
 }
 
 /**
@@ -350,7 +336,6 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
     MatrixXd S = MatrixXd(n_z, n_z);
     S.fill(0.0);
     z_pred.fill(0.0);
-
     //UKF update assignment
     //create matrix for cross correlation Tc;
     MatrixXd Tc = MatrixXd(n_x_, n_z);
@@ -389,25 +374,13 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 
         S = S+ weights_(i)*z_diff*z_diff.transpose();
         // to calculate the Tc(5,3)
-//        VectorXd x_diff = Xsig_pred_.col(i) - x_;
-//        while(x_diff(3)>M_PI) x_diff(3)-=2.*M_PI;
-//        while(x_diff(3)<-M_PI) x_diff(3) +=2.*M_PI;
-//
-//        Tc += weights_(i)*x_diff*z_diff.transpose();
-    }
-
-    S += R;
-    for(int i=0;i<2*n_aug_+1;i++){
-        VectorXd z_diff = Zsig.col(i)-z_pred;
-        while(z_diff(1) > M_PI) z_diff(1)-=2.*M_PI;
-        while(z_diff(1) < -M_PI) z_diff(1)+=2.*M_PI;
-        // to calculate the Tc(5,3)
         VectorXd x_diff = Xsig_pred_.col(i) - x_;
         while(x_diff(3)>M_PI) x_diff(3)-=2.*M_PI;
         while(x_diff(3)<-M_PI) x_diff(3) +=2.*M_PI;
-        
-        Tc += weights_(i)*x_diff*z_diff.transpose();
+
+//        Tc += weights_(i)*x_diff*z_diff.transpose();
     }
+    S += R;
     /* after calculate the S, update x & p
      */
     //calculate kalman gain K;
