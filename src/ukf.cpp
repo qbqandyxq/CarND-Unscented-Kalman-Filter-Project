@@ -26,7 +26,7 @@ UKF::UKF() {
   // initial covariance matrix
   P_ = MatrixXd(5, 5);
   // Process noise standard deviation longitudinal acceleration in m/s^2
-  std_a_ = 1.;
+  std_a_ = 1.5;
   // Process noise standard deviation yaw acceleration in rad/s^2
   std_yawdd_ = .5;
   //DO NOT MODIFY measurement noise values below these are provided by the sensor manufacturer.
@@ -69,11 +69,11 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
     if(!is_initialized_){
         x_<<1, 1, 1, 1, 1;
 
-//        P_<<1,0,0,0,0,
-//        0,1,0,0,0,
-//        0,0,1,0,0,
-//        0,0,0,1,0,
-//        0,0,0,0,1;
+        P_<<1,0,0,0,0,
+        0,1,0,0,0,
+        0,0,1,0,0,
+        0,0,0,1,0,
+        0,0,0,0,1;
         if(meas_package.sensor_type_ == MeasurementPackage::RADAR){
             double ro=meas_package.raw_measurements_(0);
             double phi = meas_package.raw_measurements_(1);
@@ -88,11 +88,11 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
             x_(3)=ro_dot*cos(phi);//0;
             x_(4)=ro_dot*sin(phi);
             
-            P_ << std_radr_*std_radr_, 0, 0, 0, 0,
-            0, std_radr_*std_radr_, 0, 0, 0,
-            0, 0, 1, 0, 0,
-            0, 0, 0, std_radphi_, 0,
-            0, 0, 0, 0, std_radphi_;
+//            P_ << std_radr_*std_radr_, 0, 0, 0, 0,
+//            0, std_radr_*std_radr_, 0, 0, 0,
+//            0, 0, 1, 0, 0,
+//            0, 0, 0, std_radphi_, 0,
+//            0, 0, 0, 0, std_radphi_;
             
         }
         else if(meas_package.sensor_type_ == MeasurementPackage::LASER){
@@ -103,11 +103,11 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
             x_(3)=0.5;
             x_(4)=0;
             
-            P_ << std_laspx_*std_laspx_, 0, 0, 0, 0,
-            0, std_laspy_*std_laspy_, 0, 0, 0,
-            0, 0, 1, 0, 0,
-            0, 0, 0, 1, 0,
-            0, 0, 0, 0, 1;
+//            P_ << std_laspx_*std_laspx_, 0, 0, 0, 0,
+//            0, std_laspy_*std_laspy_, 0, 0, 0,
+//            0, 0, 1, 0, 0,
+//            0, 0, 0, 1, 0,
+//            0, 0, 0, 0, 1;
         }
 
         previous_timestamp_ = meas_package.timestamp_;
@@ -190,36 +190,36 @@ void UKF::Prediction(double delta_t) {
         double p_x=Xsig_aug(0,i);
         double p_y=Xsig_aug(1,i);
         double v=Xsig_aug(2,i);
-        double yaw_angel=Xsig_aug(3,i);
-        double yaw_rate=Xsig_aug(4,i);
+        double yaw=Xsig_aug(3,i);
+        double yawd=Xsig_aug(4,i);
         double nu_a=Xsig_aug(5,i);
         double nu_yawdd = Xsig_aug(6,i);
 
         double px_p, py_p;
-        if(fabs(yaw_rate)>0.001){
-            px_p = p_x+ v/yaw_rate*(sin(yaw_angel+yaw_rate*delta_t)-sin(yaw_angel));
-            py_p = p_y+ v/yaw_rate*(-cos(yaw_angel+yaw_rate*delta_t)+cos(yaw_angel));
+        if(fabs(yawd)>0.001){
+            px_p = p_x+ v/yawd*(sin(yaw+yawd*delta_t)-sin(yaw));
+            py_p = p_y+ v/yawd*(-cos(yaw+yawd*delta_t)+cos(yaw));
         }else{
-            px_p=p_x + v*cos(yaw_angel)*delta_t;
-            py_p=p_y+v*sin(yaw_angel)*delta_t;
+            px_p=p_x + v*cos(yaw)*delta_t;
+            py_p=p_y+v*sin(yaw)*delta_t;
         }
         double v_p=v;
-        double yaw_angel_p = yaw_angel+yaw_rate*delta_t;//?
-        double yaw_rate_p = yaw_rate;
+        double yaw_p = yaw+yawd*delta_t;//?
+        double yawd_p = yawd;
         //add noise
-        px_p = px_p + 0.5*delta_t*delta_t*cos(yaw_angel)*nu_a;
-        py_p=py_p+0.5*delta_t*delta_t*sin(yaw_angel)*nu_a;
+        px_p = px_p + 0.5*delta_t*delta_t*cos(yaw)*nu_a;
+        py_p=py_p+0.5*delta_t*delta_t*sin(yaw)*nu_a;
 
         v_p = v_p + nu_a*delta_t;
-        yaw_angel_p = yaw_angel_p + 0.5*delta_t*delta_t*nu_yawdd;
-        yaw_rate_p = yaw_rate_p+ delta_t*nu_yawdd;
+        yaw_p = yaw_p + 0.5*delta_t*delta_t*nu_yawdd;
+        yawd_p = yawd_p+ delta_t*nu_yawdd;
 
         //insert to sigma ,5,15
         Xsig_pred_(0,i)=px_p;
         Xsig_pred_(1,i)=py_p;
         Xsig_pred_(2,i)=v_p;
-        Xsig_pred_(3,i)=yaw_angel_p;
-        Xsig_pred_(4,i)=yaw_rate_p;
+        Xsig_pred_(3,i)=yaw_p;
+        Xsig_pred_(4,i)=yawd_p;
     }
     //set weights
     double weight_0=lambda_/(lambda_ + n_aug_);
