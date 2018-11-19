@@ -295,17 +295,38 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
 
     for(int i=0;i<2*n_aug_+1;i++){
         VectorXd z_diff = Zsig.col(i) - z_pred;
+        while(z_diff(1) > M_PI) z_diff(1)-=2.*M_PI;
+        while(z_diff(1) < -M_PI) z_diff(1)+=2.*M_PI;
+        
         S = S+ weights_(i)*z_diff*z_diff.transpose();
-
+//        VectorXd x_diff = Xsig_pred_.col(i)-x_;
+//        while(x_diff(3) > M_PI) x_diff(3) -= 2.*M_PI;
+//        while(x_diff(3)< -M_PI) x_diff(3) += 2.*M_PI;
+//        Tc = Tc + weights_(i)*x_diff*z_diff.transpose();
+    }
+    S = S + R_laser_;
+    
+    VectorXd z = VectorXd(n_z);
+    
+    double meas_px = meas_package.raw_measurements_(0);
+    double meas_py = meas_package.raw_measurements_(1);
+    
+    z << meas_px,
+    meas_py;
+    
+    for (int i=0; i<2*n_aug_+1; i++) {
+        VectorXd z_diff = Zsig.col(i) - z_pred;
+        while(z_diff(1) > M_PI) z_diff(1)-=2.*M_PI;
+        while(z_diff(1) < -M_PI) z_diff(1)+=2.*M_PI;
+        
         VectorXd x_diff = Xsig_pred_.col(i)-x_;
         while(x_diff(3) > M_PI) x_diff(3) -= 2.*M_PI;
         while(x_diff(3)< -M_PI) x_diff(3) += 2.*M_PI;
         Tc = Tc + weights_(i)*x_diff*z_diff.transpose();
     }
-    S = S + R_laser_;
     //kalman gain K;
     MatrixXd K=Tc* S.inverse();
-    VectorXd z_diff_ = meas_package.raw_measurements_ - z_pred;
+    VectorXd z_diff_ = z - z_pred;
 
     x_ =x_ + K * z_diff_;
     P_ = P_ - K * S * K.transpose();
@@ -384,12 +405,34 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
     }
 
     S += R;
+    for(int i=0;i<2*n_aug_+1;i++){
+        VectorXd z_diff = Zsig.col(i)-z_pred;
+        while(z_diff(1) > M_PI) z_diff(1)-=2.*M_PI;
+        while(z_diff(1) < -M_PI) z_diff(1)+=2.*M_PI;
+        // to calculate the Tc(5,3)
+        VectorXd x_diff = Xsig_pred_.col(i) - x_;
+        while(x_diff(3)>M_PI) x_diff(3)-=2.*M_PI;
+        while(x_diff(3)<-M_PI) x_diff(3) +=2.*M_PI;
+        
+        Tc += weights_(i)*x_diff*z_diff.transpose();
+    }
+    
     /* after calculate the S, update x & p
      */
     //calculate kalman gain K;
 
     MatrixXd K = Tc *S.inverse();
-    VectorXd z_diff_ = meas_package.raw_measurements_ - z_pred;
+    VectorXd z = VectorXd(n_z);
+    
+    double meas_rho = meas_package.raw_measurements_(0);
+    double meas_phi = meas_package.raw_measurements_(1);
+    double meas_rhod = meas_package.raw_measurements_(2);
+    
+    z << meas_rho,
+    meas_phi,
+    meas_rhod;
+    
+    VectorXd z_diff_ = z - z_pred;
     while(z_diff_(1) > M_PI) z_diff_(1)-=2.*M_PI;
     while(z_diff_(1) < -M_PI) z_diff_(1)+=2.*M_PI;
 
