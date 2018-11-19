@@ -204,7 +204,7 @@ void UKF::Prediction(double delta_t) {
             py_p=p_y+v*sin(yaw_angel)*delta_t;
         }
         double v_p=v;
-        double yaw_angel_p = yaw_angel+yaw_angel*delta_t;
+        double yaw_angel_p = yaw_angel+yaw_rate*delta_t;//?
         double yaw_rate_p = yaw_rate;
         //add noise
         px_p = px_p + 0.5*delta_t*delta_t*cos(yaw_angel)*nu_a;
