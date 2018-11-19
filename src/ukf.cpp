@@ -59,79 +59,136 @@ UKF::~UKF() {}
  * @param {MeasurementPackage} meas_package The latest measurement data of
  * either radar or laser.
  */
+//void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
+//  /**
+//  TODO:
+//
+//  Complete this function! Make sure you switch between lidar and radar
+//  measurements.
+//  */
+//    if(!is_initialized_){
+//        x_<<1, 1, 1, 1, 1;
+//
+////        P_<<1,0,0,0,0,
+////        0,1,0,0,0,
+////        0,0,1,0,0,
+////        0,0,0,1,0,
+////        0,0,0,0,1;
+//        if(meas_package.sensor_type_ == MeasurementPackage::RADAR){
+//            double ro=meas_package.raw_measurements_(0);
+//            double phi = meas_package.raw_measurements_(1);
+//            double ro_dot = meas_package.raw_measurements_(2);
+//
+//            double vx=ro_dot*cos(phi);
+//            double vy=ro_dot*sin(phi);
+//
+//            x_(0)=ro*cos(phi);
+//            x_(1)=ro*sin(phi);
+//            x_(2)=4;//sqrt(pow(vx,2) + pow(vy,2));
+//            x_(3)=ro_dot*cos(phi);//0;
+//            x_(4)=ro_dot*sin(phi);
+//
+//            P_ << std_radr_*std_radr_, 0, 0, 0, 0,
+//            0, std_radr_*std_radr_, 0, 0, 0,
+//            0, 0, 1, 0, 0,
+//            0, 0, 0, std_radphi_, 0,
+//            0, 0, 0, 0, std_radphi_;
+//
+//        }
+//        else if(meas_package.sensor_type_ == MeasurementPackage::LASER){
+//
+//            x_(0)=meas_package.raw_measurements_(0);
+//            x_(1)=meas_package.raw_measurements_(1);
+//            x_(2)=4;
+//            x_(3)=0.5;
+//            x_(4)=0;
+//
+//            P_ << std_laspx_*std_laspx_, 0, 0, 0, 0,
+//            0, std_laspy_*std_laspy_, 0, 0, 0,
+//            0, 0, 1, 0, 0,
+//            0, 0, 0, 1, 0,
+//            0, 0, 0, 0, 1;
+//        }
+//
+//        previous_timestamp_ = meas_package.timestamp_;
+//        is_initialized_ =true;
+//        return;
+//    }
+//    //start the pipeline
+//
+//
+//    // Prediction
+//    double df = (meas_package.timestamp_ - previous_timestamp_)/1000000.0;
+//    previous_timestamp_ = meas_package.timestamp_;
+//
+//    Prediction(df);
+//
+//    //update
+//    if(meas_package.sensor_type_ == MeasurementPackage::RADAR && use_radar_){
+////        cout<<"UpdateRadar-------"<<endl;
+//        UpdateRadar(meas_package);
+//    }
+//    else if(meas_package.sensor_type_ == MeasurementPackage::LASER && use_laser_){
+//  //      cout<<"UpdateLidar-------"<<endl;
+//        UpdateLidar(meas_package);
+//    }
+//}
 void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
-  /**
-  TODO:
-
-  Complete this function! Make sure you switch between lidar and radar
-  measurements.
-  */
-    if(!is_initialized_){
-        x_<<1, 1, 1, 1, 1;
-
-//        P_<<1,0,0,0,0,
-//        0,1,0,0,0,
-//        0,0,1,0,0,
-//        0,0,0,1,0,
-//        0,0,0,0,1;
-        if(meas_package.sensor_type_ == MeasurementPackage::RADAR){
-            double ro=meas_package.raw_measurements_(0);
+    
+    if (!is_initialized_) {
+        
+        if (meas_package.sensor_type_ == MeasurementPackage::RADAR) {
+            double rho = meas_package.raw_measurements_(0);
             double phi = meas_package.raw_measurements_(1);
-            double ro_dot = meas_package.raw_measurements_(2);
-
-            double vx=ro_dot*cos(phi);
-            double vy=ro_dot*sin(phi);
-
-            x_(0)=ro*cos(phi);
-            x_(1)=ro*sin(phi);
-            x_(2)=4;//sqrt(pow(vx,2) + pow(vy,2));
-            x_(3)=ro_dot*cos(phi);//0;
-            x_(4)=ro_dot*sin(phi);
+            double rhodot = meas_package.raw_measurements_(2);
             
+            // polar to cartesian - r * cos(angle) for x and r * sin(angle) for y
+            // ***** Middle value for 'v' can be tuned *****
+            x_ << rho * cos(phi), rho * sin(phi), 4, rhodot * cos(phi), rhodot * sin(phi);
+            
+            //state covariance matrix
+            //***** values can be tuned *****
             P_ << std_radr_*std_radr_, 0, 0, 0, 0,
             0, std_radr_*std_radr_, 0, 0, 0,
             0, 0, 1, 0, 0,
             0, 0, 0, std_radphi_, 0,
             0, 0, 0, 0, std_radphi_;
-            
         }
-        else if(meas_package.sensor_type_ == MeasurementPackage::LASER){
-
-            x_(0)=meas_package.raw_measurements_(0);
-            x_(1)=meas_package.raw_measurements_(1);
-            x_(2)=4;
-            x_(3)=0.5;
-            x_(4)=0;
+        else if (meas_package.sensor_type_ == MeasurementPackage::LASER) {
+            // Initialize state.
+            // ***** Last three values below can be tuned *****
+            x_ << meas_package.raw_measurements_(0), meas_package.raw_measurements_(1), 4, 0.5, 0.0;
             
+            //state covariance matrix
+            //***** values can be tuned *****
             P_ << std_laspx_*std_laspx_, 0, 0, 0, 0,
             0, std_laspy_*std_laspy_, 0, 0, 0,
             0, 0, 1, 0, 0,
             0, 0, 0, 1, 0,
             0, 0, 0, 0, 1;
         }
-
-        previous_timestamp_ = meas_package.timestamp_;
-        is_initialized_ =true;
+        
+        // done initializing, no need to predict or update
+        is_initialized_ = true;
+        time_us_ = meas_package.timestamp_;
         return;
+        
     }
-    //start the pipeline
-
-
-    // Prediction
-    double df = (meas_package.timestamp_ - previous_timestamp_)/1000000.0;
-    previous_timestamp_ = meas_package.timestamp_;
-
-    Prediction(df);
-
-    //update
-    if(meas_package.sensor_type_ == MeasurementPackage::RADAR && use_radar_){
-//        cout<<"UpdateRadar-------"<<endl;
+    
+    // Calculate delta_t, store current time for future
+    double delta_t = (meas_package.timestamp_ - time_us_) / 1000000.0;
+    time_us_ = meas_package.timestamp_;
+    
+    // Predict
+    Prediction(delta_t);
+    
+    // Measurement updates
+    if (meas_package.sensor_type_ == MeasurementPackage::RADAR) {
         UpdateRadar(meas_package);
-    }
-    else if(meas_package.sensor_type_ == MeasurementPackage::LASER && use_laser_){
-  //      cout<<"UpdateLidar-------"<<endl;
+    } else {
         UpdateLidar(meas_package);
     }
+    
 }
 
 /**
