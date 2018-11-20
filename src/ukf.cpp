@@ -68,12 +68,6 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   */
     if(!is_initialized_){
         x_<<1, 1, 1, 1, 1;
-
-//        P_<<0.15,0,0,0,0,
-//        0,0.15,0,0,0,
-//        0,0,1,0,0,
-//        0,0,0,1,0,
-//        0,0,0,0,1;
         if(meas_package.sensor_type_ == MeasurementPackage::RADAR){
             double ro=meas_package.raw_measurements_(0);
             double phi = meas_package.raw_measurements_(1);
@@ -87,12 +81,6 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
             x_(2)=sqrt(pow(vx,2) + pow(vy,2));//4
             x_(3)=0;
             x_(4)=0;
-            
-//            std_radr_ = 0.3;
-//            // Radar measurement noise standard deviation angle in rad
-//            std_radphi_ = 0.03;
-//            // Radar measurement noise standard deviation radius change in m/s
-//            std_radrd_ = 0.3;
             
             P_ << std_radr_*std_radr_, 0, 0, 0, 0,
             0, std_radr_*std_radr_, 0, 0, 0,
