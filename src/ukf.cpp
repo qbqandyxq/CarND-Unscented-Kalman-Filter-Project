@@ -305,6 +305,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
     P_ = P_ - K * S * K.transpose();
     //Calculate NIS
     NIS_laser_ = z_diff_.transpose() * S.inverse() * z_diff_;
+    cout<<"NIS_laser_"<<NIS_laser_<<endl;
 }
 
 /**
@@ -388,4 +389,5 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
     P_ = P_ - K * S * K.transpose();
     //Calculate NIS
     NIS_radar_ = z_diff_.transpose() * S.inverse() * z_diff_;
+    cout<<"NIS_radar_"<<NIS_radar_<<endl;
 }
