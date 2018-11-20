@@ -26,9 +26,9 @@ UKF::UKF() {
   // initial covariance matrix
   P_ = MatrixXd(5, 5);
   // Process noise standard deviation longitudinal acceleration in m/s^2
-  std_a_ = 1;
+  std_a_ = 1.;
   // Process noise standard deviation yaw acceleration in rad/s^2
-  std_yawdd_ = .5;
+  std_yawdd_ = 1.;
   //DO NOT MODIFY measurement noise values below these are provided by the sensor manufacturer.
   // Laser measurement noise standard deviation position1 in m
   std_laspx_ = 0.15;
@@ -78,7 +78,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 
             x_(0)=ro*cos(phi);
             x_(1)=ro*sin(phi);
-            x_(2)=sqrt(pow(vx,2) + pow(vy,2));//4
+            x_(2)=sqrt(pow(vx,2) + pow(vy,2));
             x_(3)=0;
             x_(4)=0;
             
@@ -93,8 +93,8 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 
             x_(0)=meas_package.raw_measurements_(0);
             x_(1)=meas_package.raw_measurements_(1);
-            x_(2)=0;//4;
-            x_(3)=0;//0.5;
+            x_(2)=0;
+            x_(3)=0;
             x_(4)=0;
             
             P_ << std_laspx_*std_laspx_, 0, 0, 0, 0,
