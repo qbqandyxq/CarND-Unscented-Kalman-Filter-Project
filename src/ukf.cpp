@@ -26,9 +26,9 @@ UKF::UKF() {
   // initial covariance matrix
   P_ = MatrixXd(5, 5);
   // Process noise standard deviation longitudinal acceleration in m/s^2
-  std_a_ = 1.;
+  std_a_ = 2.;
   // Process noise standard deviation yaw acceleration in rad/s^2
-  std_yawdd_ = .3;
+  std_yawdd_ = .5;
   //DO NOT MODIFY measurement noise values below these are provided by the sensor manufacturer.
   // Laser measurement noise standard deviation position1 in m
   std_laspx_ = 0.15;
@@ -68,11 +68,11 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   */
     if(!is_initialized_){
         x_<<1, 1, 1, 1, 1;
-        P_ << 1, 0, 0, 0, 0,
-              0, 1, 0, 0, 0,
-              0, 0, 1, 0, 0,
-              0, 0, 0, 1, 0,
-              0, 0, 0, 0, 1;
+        //P_ << 1, 0, 0, 0, 0,
+         //     0, 1, 0, 0, 0,
+          //    0, 0, 1, 0, 0,
+           //   0, 0, 0, 1, 0,
+            //  0, 0, 0, 0, 1;
         if(meas_package.sensor_type_ == MeasurementPackage::RADAR){
             double ro=meas_package.raw_measurements_(0);
             double phi = meas_package.raw_measurements_(1);
@@ -93,11 +93,11 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 //            0, 0, 0, 0, 1;
             
             
-//            P_ << std_radr_*std_radr_, 0, 0, 0, 0,
-//            0, std_radr_*std_radr_, 0, 0, 0,
-//            0, 0, 1, 0, 0,
-//            0, 0, 0, 1, 0,
-//            0, 0, 0, 0, 1;
+            P_ << std_radr_*std_radr_, 0, 0, 0, 0,
+            0, std_radr_*std_radr_, 0, 0, 0,
+            0, 0, 1, 0, 0,
+            0, 0, 0, 1, 0,
+            0, 0, 0, 0, 1;
             
         }
         else if(meas_package.sensor_type_ == MeasurementPackage::LASER){
@@ -108,11 +108,11 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
             x_(3)=0;
             x_(4)=0;
             
-//            P_ << std_laspx_*std_laspx_, 0, 0, 0, 0,
-//            0, std_laspy_*std_laspy_, 0, 0, 0,
-//            0, 0, 1, 0, 0,
-//            0, 0, 0, 1, 0,
-//            0, 0, 0, 0, 1;
+            P_ << std_laspx_*std_laspx_, 0, 0, 0, 0,
+            0, std_laspy_*std_laspy_, 0, 0, 0,
+            0, 0, 1, 0, 0,
+            0, 0, 0, 1, 0,
+            0, 0, 0, 0, 1;
         }
 
         previous_timestamp_ = meas_package.timestamp_;
