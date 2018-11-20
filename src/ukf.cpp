@@ -86,12 +86,6 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
             x_(2)=sqrt(pow(vx,2) + pow(vy,2));
             x_(3)=0;
             x_(4)=0;
-//            P_ << 0.15, 0, 0, 0, 0,
-//            0, 0.15, 0, 0, 0,
-//            0, 0, 1, 0, 0,
-//            0, 0, 0, 1, 0,
-//            0, 0, 0, 0, 1;
-            
             
             P_ << std_radr_*std_radr_, 0, 0, 0, 0,
             0, std_radr_*std_radr_, 0, 0, 0,
@@ -244,7 +238,6 @@ void UKF::Prediction(double delta_t) {
 
     for(int i=0;i<2*n_aug_+1;i++){
         //        covariance
-
         VectorXd x_diff = Xsig_pred_.col(i) - x_;
 
         while (x_diff(3) > M_PI) x_diff(3) -= 2. * M_PI;
@@ -291,8 +284,6 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
         //fuck
         z_pred += weights_(i) *Zsig.col(i);
     }
-//    R_laser_(0,0)=std_laspx_*std_laspx_;
-//    R_laser_(1,1) = std_laspy_*std_laspy_;
     R_laser_<<std_laspx_*std_laspx_, 0,
     0, std_laspy_*std_laspy_;
 
@@ -316,7 +307,6 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
     P_ = P_ - K * S * K.transpose();
     //Calculate NIS
     NIS_laser_ = z_diff_.transpose() * S.inverse() * z_diff_;
-    cout<<"NIS_laser_"<<NIS_laser_<<endl;
 }
 
 /**
@@ -397,8 +387,6 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 
     //Calculate NIS
     NIS_radar_ = z_diff_.transpose() * S.inverse() * z_diff_;
-//    cout<<"NIS_radar_"<<NIS_radar_<<endl;
-    
     x_ = x_ + K * z_diff_;
     P_ = P_ - K * S * K.transpose();
 
