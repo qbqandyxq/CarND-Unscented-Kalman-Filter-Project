@@ -81,18 +81,18 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
             x_(2)=sqrt(pow(vx,2) + pow(vy,2));
             x_(3)=0;
             x_(4)=0;
-            P_ << 0.15, 0, 0, 0, 0,
-            0, 0.15, 0, 0, 0,
+//            P_ << 0.15, 0, 0, 0, 0,
+//            0, 0.15, 0, 0, 0,
+//            0, 0, 1, 0, 0,
+//            0, 0, 0, 1, 0,
+//            0, 0, 0, 0, 1;
+            
+            
+            P_ << std_radr_*std_radr_, 0, 0, 0, 0,
+            0, std_radr_*std_radr_, 0, 0, 0,
             0, 0, 1, 0, 0,
             0, 0, 0, 1, 0,
             0, 0, 0, 0, 1;
-            
-            
-//            P_ << std_radr_*std_radr_, 0, 0, 0, 0,
-//            0, std_radr_*std_radr_, 0, 0, 0,
-//            0, 0, 1, 0, 0,
-//            0, 0, 0, std_radphi_, 0,
-//            0, 0, 0, 0, std_radphi_;
             
         }
         else if(meas_package.sensor_type_ == MeasurementPackage::LASER){
